@@ -1,11 +1,11 @@
 {
-	"name": "vscodex",
-	"displayName": "vscodex",
-	"publisher": "vhachin",
+	"name": "vscodex-nyu",
+	"displayName": "vscodex-nyu",
+	"publisher": "gussand",
 	"icon": "assets/codex_icon.png",
-	"description": "A non-official OpenAI extension for vscode",
+	"description": "A non-official OpenAI extension for vscode based on vscodex but enhanced by NYU",
 	"version": "0.1.0",
-	"repository": "https://github.com/VincentHch/vscodex",
+	"repository": "https://github.com/gussand/vscodex-nyu",
 	"engines": {
 		"vscode": "^1.56.0"
 	},
@@ -13,87 +13,10 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:vscodex.predict",
-		"onCommand:vscodex.setLevelAndPredict"
+		"onLanguage:c"
 	],
 	"main": "./out/extension.js",
-	"contributes": {
-		"commands": [
-			{
-				"command": "vscodex.predict",
-				"title": "VScodex: Complete snippet",
-				"icon": "asssets/codex_icon.png"
-			},
-			{
-				"command": "vscodex.setLevelAndPredict",
-				"title": "VScodex: Set level and complete snippet",
-				"icon": "asssets/codex_icon.png"
-			}
-		],
-		"keybindings": [
-			{
-				"command": "vscodex.predict",
-				"key": "ctrl+enter"
-			},
-			{
-				"command": "vscodex.setLevelAndPredict",
-				"key": "ctrl+shift+enter"
-			}
-		],
-		"configuration": {
-			"title": "VSCodex",
-			"properties": {
-				"general.OPENAI_API_KEY": {
-					"type": "string",
-					"default": "",
-					"scope": "application",
-					"description": "Your OpenAI secret, if empty, OPENAI_API_KEY environment variable will be used instead."
-				},
-				"general.maxTokens": {
-					"type": "number",
-					"default": 250,
-					"scope": "application",
-					"description": "Maximum number of tokens predicted."
-				},
-				"general.temperature": {
-					"type": "number",
-					"default": 0.3,
-					"scope": "application",
-					"description": "0 -> deterministic model, 1 -> Random model"
-				},
-				"general.frequencyPenalty": {
-					"type": "number",
-					"default": 0,
-					"scope": "application",
-					"description": "0-1, Higher value -> Less chance of repeating same line"
-				},
-				"general.presencePenalty": {
-					"type": "number",
-					"default": 0,
-					"scope": "application",
-					"description": "0-1, Higher value -> Less chance of repeating same topic"
-				},
-				"tokens.stopFunction": {
-					"type": "string",
-					"default": "def,class,@",
-					"scope": "application",
-					"description": "Tokens (separated by a comma,without spaces) that start a new function. If 'function-level' is selected, prediction will stop when one of these token or a class-level token is encountered."
-				},
-				"tokens.stopClass": {
-					"type": "string",
-					"default": "class,@",
-					"scope": "application",
-					"description": "Tokens (separated by a comma,without spaces) that start a new class. If 'class-level' is selected, prediction will stop when one of these token is encountered."
-				},
-				"tokens.stopCustom": {
-					"type": "string",
-					"default": "",
-					"scope": "application",
-					"description": "Custom-level stop sequences (separated by a comma,without spaces)."
-				}
-			}
-		}
-	},
+
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
