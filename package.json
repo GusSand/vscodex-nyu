@@ -9,6 +9,10 @@
 	"engines": {
 		"vscode": "^1.56.0"
 	},
+	"isBuiltin": true,
+	"enabledApiProposals": [
+		"inlineCompletions"
+	],
 	"categories": [
 		"Other"
 	],
@@ -16,6 +20,21 @@
 		"onLanguage:c"
 	],
 	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "extension.inline-completion-settings",
+				"title": "Inline Completion Settings"
+			}
+		],
+		"menus": {
+			"editor/inlineCompletions/actions": [
+				{
+					"command": "extension.inline-completion-settings"
+				}
+			]
+		}
+	},
 
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
@@ -40,6 +59,7 @@
 		"vscode-test": "^1.5.2"
 	},
 	"dependencies": {
-		"superagent": "^6.1.0"
+		"superagent": "^6.1.0",
+		"vscode-dts": "^0.3.2"
 	}
 }

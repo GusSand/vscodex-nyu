@@ -9,7 +9,20 @@ An *API key* (access token) is required in order to use this extension. This tok
 echo 'export OPENAI_API_KEY=********' >> ~/.bashrc
 ```
 
-## Building and installing extension
+## Testing/Running  Extension
+
+To test this extension you will need to use the insiders build of VsCode. You can install from https://code.visualstudio.com/insiders/
+
+This version of the codex extension uses the proposed `InlineCompletion` interface. You can read more about it here but it seems that the VsCode team doesn't plan to make a release of it anytime soon. 
+
+```
+1. Install at least version 1.63 of VSCode Insiders. 
+2. Change the "enableProposedApi": true to "enabledApiProposals": [ "inlineCompletions" ] in the package.json file. 
+3. Run npm i vscode-dts to download the latest version of vscode-dts 
+4. Run npx vscode-dts dev.
+```
+
+## Building extension
 
 ```
 npm install -g vsce

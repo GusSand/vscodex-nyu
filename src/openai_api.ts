@@ -14,7 +14,7 @@ const CODEX_URL = "https://api.openai.com/v1/engines/davinci-codex/completions";
 export const getNextTokens = async (prompt: string,
                                     config: Config,
                                     apiKey: string
-                                    ): Promise<string> => new Promise((resolve, reject) => {
+                                    ): Promise<string[]> => new Promise((resolve, reject) => {
 
     superagent
 	.post(CODEX_URL)
@@ -46,7 +46,8 @@ export const getNextTokens = async (prompt: string,
 		if (resp["choices"].length === 0) {
 			reject(new Error("No code returned by the server."));
 		} else {
-			resolve(String(resp["choices"][0]["text"]));
+			//resolve((resp['choices/text']));
+			resolve(resp["choices"][0]["text"]);
 		}
 	});
 });

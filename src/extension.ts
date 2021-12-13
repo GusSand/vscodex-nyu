@@ -14,9 +14,9 @@ const superagent = require("superagent");
 const vscodexOut = vscode.window.createOutputChannel("vscodex");
 
 const decorationType = vscode.window.createTextEditorDecorationType({
-  //color: "grey",
-  backgroundColor: "white",
-  border: "2px solid red"
+  color: "grey",
+  //backgroundColor: "white",
+  //border: "2px solid red"
 });
 
 // This method gets called
@@ -39,15 +39,13 @@ function decorate(editor: vscode.TextEditor, pos: vscode.Position, text: string)
 }
 
 
-async function appendCurrentSelection(context: vscode.ExtensionContext) : Promise<string> {
+async function getSuggestionsOld(context: vscode.ExtensionContext, text: string) : Promise<string[]> {
 
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {return  '';} // No open text editor
-    const doc = editor.document;
-    const pos = editor.selection.active;
-    const text = doc.getText(new vscode.Range(new vscode.Position(0, 0), pos));
-
-    let suggestionText: string = ''; 
+    // const editor = vscode.window.activeTextEditor;
+    // if (!editor) {return  '';} // No open text editor
+    // const doc = editor.document;
+    // const pos = editor.selection.active;
+    // const text = doc.getText(new vscode.Range(new vscode.Position(0, 0), pos));
 
     
     // Display a progress bar while fetching the response
@@ -68,37 +66,40 @@ async function appendCurrentSelection(context: vscode.ExtensionContext) : Promis
             })
             .then((completion) => {
 
-                // Do not edit selection if the user requested cancelation
-                if (cancelToken.isCancellationRequested || !completion) {
-                    return;
-                }
-
-                // if (vscode.window.activeTextEditor) {
-                //     vscode.window.activeTextEditor.edit(editBuilder => {
-                //         editBuilder.insert(selection.end, completion);
-                //     });
-                // }
-
-                editor.edit((editBuilder) => {
-                    editBuilder.insert(pos, completion);
-                });
-
-                const openEditor = vscode.window.visibleTextEditors.filter(
-                  editor => editor.document.uri === doc.uri
-                )[0];
-                decorate(openEditor, pos, completion);
-
-                // const textCompletion = new vscode.CompletionItem("text");
-                // textCompletion.kind = vscode.CompletionItemKind.Text;
-                // textCompletion.insertText =  completion; 
-                // suggestionText = completion;
-
+                return completion;
+ 
         });
 	});
-    
-  return suggestionText;
 
 }
+
+async function getSuggestions(context: vscode.ExtensionContext, text: string) : Promise<string> {
+
+  // const editor = vscode.window.activeTextEditor;
+  // if (!editor) {return  '';} // No open text editor
+  // const doc = editor.document;
+  // const pos = editor.selection.active;
+  // const text = doc.getText(new vscode.Range(new vscode.Position(0, 0), pos));
+
+  
+  // Display a progress bar while fetching the response
+
+          
+    await getNextTokens(text, getDefaultConfig(context), getApiKey())
+    .catch((error) => {
+        vscode.window.showErrorMessage(error.toString());
+        return "error";
+    })
+    .then((completion) => {
+        return completion;
+
+  }
+   return 'foo';
+    ) ;
+
+
+
+
 
 /**
  * User select a "prediction size level", between function-level, class-level, and file-level.
@@ -119,51 +120,150 @@ async function pickAndSetLevel(context: vscode.ExtensionContext) {
     }
 }
 
-  
-  
+// this method is called when your extension is activated
+// 
+
+// interface CustomInlineCompletionItem extends vscode.InlineCompletionItem {
+//     trackingId: string;
+// }
+
+function isAtEndOfLine() {
+
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {return  '';} // No open text editor
+
+  const doc = editor.document;
+  const pos = editor.selection.active;
+
+  //const start = range.end;
+  const line = doc.lineAt(pos);
+  return line.text[pos.character] === ';' || line.text[pos.character] === '\n';
+}
+
 
 // this method is called when the extension is activated
 // your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export function activate(vscontext: vscode.ExtensionContext) {
 
-    let timer = undefined;
-    let output: vscode.CompletionItem[] | undefined = undefined;
+    // let timer: any; 
+    // let output: vscode.CompletionItem[] | undefined = undefined;
 
-    storeDefaultLevel(context, 'function-level');
+    // storeDefaultLevel(context, 'function-level');
 
 
-    vscode.workspace.onWillSaveTextDocument((e) => {
-      appendCurrentSelection(context);
+    // vscode.workspace.onWillSaveTextDocument((e) => {
+    //   appendCurrentSelection(context);
+    // });
+
+    const disposable =  vscode.commands.registerCommand(
+      'extension.inline-completion-settings',
+      () => {
+        vscode.window.showInformationMessage('Show settings');
+      }
+    );
+  
+    vscontext.subscriptions.push(disposable);
+  
+    const allSuggestions = [
+      'helloworld1',
+      `if (n < 2) {
+    return 1;
+  }
+  return fib(n - 1) + fib(n - 2);`,
+      `if (n < 3) {
+    if (n < 2) {
+      return 1;
+    }
+    return 1;
+  }
+  return fib(n - 1) + fib(n - 2);`,
+    ];
+  
+    function longestSuffixPrefixLength(a: string, b: string): number {
+      for (let i = Math.min(a.length, b.length); i > 0; i--) {
+        if (a.substr(-i) == b.substr(0, i)) {
+          return i;
+        }
+      }
+      return 0;
+    }
+  
+    interface CustomInlineCompletionItem extends vscode.InlineCompletionItem {
+      trackingId: string;
+    }
+  
+    const provider: vscode.InlineCompletionItemProvider<CustomInlineCompletionItem> = {
+      provideInlineCompletionItems: async (document, position, context, token) => {
+        const textBeforeCursor = document.getText(
+          new vscode.Range(position.with(undefined, 0), position)
+        );
+  
+        // if (!isAtEndOfLine()) {
+        //   return;
+        // }
+        // else {
+        //   showMessageBox({'at the end of line': true});
+        // }
+
+        // You can use the await keyword to convert a promise
+        // into its value. Today, these only work inside an async
+        // function.
+        const asyncFunc = async () => [":wave:",":smile:"];
+        let myPromiseString = asyncFunc();
+
+        const myWrapperFunction = async () => {
+          
+          const myPromiseString = asyncFunc();
+          try {
+            const completion = await getNextTokens(text, getDefaultConfig(vscontext), getApiKey());
+            // Via the await keyword, now myResolvedPromiseString
+            // is a string
+            const myPromiseString = completion;
+          }
+          catch (error) {
+            vscode.window.showErrorMessage(error.toString());
+          }
+          return  completion;
+        };
+
+        allSuggestions = myPromiseString; 
+
+        // if (context.triggerKind === vscode.InlineCompletionTriggerKind.Explicit) {
+        //   (await suggestions).push('if (n < 1000) {\n}', 'helloworld2');
+        //   await new Promise((r) => setTimeout(r, 1000));
+        // }
+  
+        const items = new Array<CustomInlineCompletionItem>();
+        for (const s of await suggestions) {
+          const l = longestSuffixPrefixLength(textBeforeCursor, s);
+          if (l > 0) {
+            items.push({
+              text: s,
+              range: new vscode.Range(position.translate(0, -l), position),
+              trackingId: 'some-id',
+            });
+          }
+        }
+        return { items };
+      },
+    };
+  
+    vscode.languages.registerInlineCompletionItemProvider({ pattern: "**" }, provider);
+  
+    // Be aware that the API around `getInlineCompletionItemController` will not be finalized as is!
+    vscode.window.getInlineCompletionItemController(provider).onDidShowCompletionItem(e => {
+      const id = e.completionItem.trackingId;
     });
 
-    // vscode.workspace.onWillSaveTextDocument(event => {
-    //     const openEditor = vscode.window.visibleTextEditors.filter(
-    //       editor => editor.document.uri === event.document.uri
-    //     )[0];
-    //     decorate(openEditor);
-    //   });
-    
-
-    // const predict2 = vscode.languages.registerCompletionItemProvider('c',  {
-		// provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, compcontext: vscode.CompletionContext) {
-    //         return [new vscode.CompletionItem('predict')];
-    //         //appendCurrentSelection(context);
-    //     }
-    // });
-    
-
-    // const predict = vscode.commands.registerCommand("vscodex.predict", async function() {
-    // 	appendCurrentSelection(context);
-    // });
 
     //context.subscriptions.push(predict);
 
-    // const setLevelAndPredict = vscode.commands.registerCommand("vscodex.setLevelAndPredict", async function() {
-    //     await pickAndSetLevel(context);
-    //     appendCurrentSelection(context);
-    // });
-
+    
   }
 
 // this method is called when the extension is deactivated
 export function deactivate() {}
+function showMessageBox(arg0: { 'at the end of line': boolean; }) {
+  throw new Error("Function not implemented.");
+}
+
