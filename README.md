@@ -8,6 +8,8 @@ An *API key* (access token) is required in order to use this extension. This tok
 ```
 echo 'export OPENAI_API_KEY=********' >> ~/.bashrc
 ```
+## TODO:
+This extension doesn't currently work since MSFT added the InlineCompletions API to mainline. I need to fix it to work with it. 
 
 ## Testing/Running  Extension
 
